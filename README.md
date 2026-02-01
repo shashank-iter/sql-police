@@ -2,6 +2,15 @@
 
 A gamified SQL learning platform built with **Next.js 15 (App Router)**, **sql.js**, and **Monaco Editor**. Players solve police cases by writing SQL queries against an in-browser SQLite database.
 
+## Features
+
+- **Gamified Learning**: Engage players with interactive police cases.
+- **SQL Query Practice**: Write SQL queries to solve crimes.
+- **In-Browser Database**: Use sql.js for an in-browser SQLite database.
+
+
+
+
 ---
 
 ## Quick Start
