@@ -74,7 +74,7 @@ export function MonacoEditor({
         suggest: { showKeywords: true, showSnippets: true },
         quickSuggestionsDelay: 200,
       }}
-      beforeMount={(monaco) => {
+      beforeMount={(monaco: any) => {
         monaco.editor.defineTheme("sql-noir", {
           base: "vs-dark",
           inherit: true,
