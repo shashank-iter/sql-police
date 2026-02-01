@@ -22,8 +22,6 @@ export async function generateMetadata({
   const { caseId } = await params;
   const caseData = getCaseById(caseId);
   return {
-    title: caseData
-      ? `Case: ${caseData.title} — SQL Detective`
-      : "Case Not Found",
+    title: caseData ? `Case: ${caseData.title} — SQL Police` : "Case Not Found",
   };
 }
