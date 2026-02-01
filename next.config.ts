@@ -1,8 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
-  reactCompiler: true,
+  // No turbopack aliases needed — sql.js is loaded at runtime via a
+  // script tag from public/, completely outside the bundler graph.
+  turbopack: {},
 };
 
 export default nextConfig;
