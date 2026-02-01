@@ -1,4 +1,5 @@
-import type { Metadata, ReactNode } from "next";
+import type { Metadata } from "next";
+import { ReactNode } from "react";
 import { Bebas_Neue, Source_Code_Pro } from "next/font/google";
 import "./globals.css";
 
