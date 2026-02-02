@@ -16,7 +16,7 @@ export default function HomePage() {
           className="text-2xl tracking-widest uppercase font-sans"
           style={{ color: "var(--primary)" }}
         >
-          ◆ SQL Police
+          ◆ SQL Detective
         </h1>
         <span className="text-xs text-muted-foreground tracking-wide uppercase">
           Case Board
@@ -26,7 +26,7 @@ export default function HomePage() {
       {/* ── Hero blurb ─────────────────────── */}
       <section className="max-w-4xl mx-auto px-6 pt-14 pb-10 text-center">
         <p className="text-muted-foreground text-sm tracking-widest uppercase mb-3">
-          Welcome, Officer
+          Welcome, Detective
         </p>
         <h2
           className="text-5xl font-sans tracking-widest uppercase leading-tight mb-4"
@@ -44,7 +44,7 @@ export default function HomePage() {
       <main className="max-w-4xl mx-auto px-6 pb-24">
         <div className="flex flex-col gap-4">
           {cases.map((c, i) => {
-            const isLocked = i > 0; // only first case unlocked for now
+            const isLocked = false; // all cases unlocked
             return (
               <CaseCard key={c.id} caseData={c} locked={isLocked} index={i} />
             );
