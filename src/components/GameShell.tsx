@@ -19,6 +19,8 @@ import {
   ChevronRight,
   Database,
   X,
+  Menu,
+  BarChart3,
 } from "lucide-react";
 
 /* ───────────────────────────────────────────
@@ -49,6 +51,8 @@ export function GameShell({ caseData }: { caseData: CaseData }) {
   } | null>(null);
   const [showVictory, setShowVictory] = useState(false);
   const [showSchema, setShowSchema] = useState(false);
+  const [showMissions, setShowMissions] = useState(false); // mobile missions panel
+  const [showResults, setShowResults] = useState(false); // mobile results panel
 
   const currentMission = caseData.missions[currentMissionIdx];
   const isComplete = completedMissions.size === caseData.missions.length;
@@ -133,13 +137,13 @@ export function GameShell({ caseData }: { caseData: CaseData }) {
   // ── Loading / error states ───────────────
   if (dbLoading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-3 bg-background text-foreground">
+      <div className="min-h-screen flex flex-col items-center justify-center gap-3 bg-background text-foreground px-4">
         <Loader2
           size={32}
           className="animate-spin"
           style={{ color: "var(--primary)" }}
         />
-        <p className="text-muted-foreground text-sm">
+        <p className="text-muted-foreground text-sm text-center">
           Initialising evidence database…
         </p>
       </div>
@@ -170,27 +174,30 @@ export function GameShell({ caseData }: { caseData: CaseData }) {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       {/* ─── Top nav ──────────────────────── */}
-      <header className="border-b border-border px-4 py-3 flex items-center justify-between shrink-0">
-        <div className="flex items-center gap-4">
+      <header className="border-b border-border px-3 md:px-4 py-3 flex items-center justify-between shrink-0">
+        <div className="flex items-center gap-2 md:gap-4 min-w-0">
           <Link
             href="/"
-            className="text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 text-sm"
+            className="text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 text-sm shrink-0"
           >
             <ArrowLeft size={14} />
-            Cases
+            <span className="hidden sm:inline">Cases</span>
           </Link>
-          <span className="text-border">|</span>
+          <span className="text-border hidden sm:inline">|</span>
           <h1
-            className="text-base font-sans tracking-widest uppercase"
+            className="text-xs sm:text-sm md:text-base font-sans tracking-widest uppercase truncate"
             style={{ color: "var(--primary)" }}
           >
             {caseData.title}
           </h1>
         </div>
-        <div className="flex items-center gap-4">
-          <span className="text-xs text-muted-foreground">
-            <span style={{ color: "var(--primary)" }}>{totalPoints}</span> /{" "}
-            {caseData.totalPoints} pts
+        <div className="flex items-center gap-2 md:gap-4 shrink-0">
+          <span className="text-xs text-muted-foreground whitespace-nowrap">
+            <span style={{ color: "var(--primary)" }}>{totalPoints}</span>
+            <span className="hidden sm:inline">
+              {" "}
+              / {caseData.totalPoints} pts
+            </span>
           </span>
           <button
             onClick={handleReset}
@@ -202,10 +209,52 @@ export function GameShell({ caseData }: { caseData: CaseData }) {
         </div>
       </header>
 
+      {/* ─── Mobile toggle buttons (visible only on mobile) ──────── */}
+      <div className="lg:hidden border-b border-border px-3 py-2 flex gap-2">
+        <button
+          onClick={() => {
+            setShowMissions(!showMissions);
+            setShowResults(false);
+          }}
+          className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded text-xs font-mono transition-colors"
+          style={{
+            background: showMissions ? "var(--primary)" : "var(--secondary)",
+            color: showMissions
+              ? "var(--primary-foreground)"
+              : "var(--secondary-foreground)",
+          }}
+        >
+          <Menu size={14} />
+          Missions
+        </button>
+        <button
+          onClick={() => {
+            setShowResults(!showResults);
+            setShowMissions(false);
+          }}
+          className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded text-xs font-mono transition-colors"
+          style={{
+            background: showResults ? "var(--primary)" : "var(--secondary)",
+            color: showResults
+              ? "var(--primary-foreground)"
+              : "var(--secondary-foreground)",
+          }}
+        >
+          <BarChart3 size={14} />
+          Results
+        </button>
+      </div>
+
       {/* ─── Body ─────────────────────────── */}
       <div className="flex flex-1 overflow-hidden relative">
-        {/* ── Left: Mission panel ─────────── */}
-        <aside className="w-80 shrink-0 border-r border-border overflow-y-auto flex flex-col">
+        {/* ── Left: Mission panel (desktop always visible, mobile overlay) ─────────── */}
+        <aside
+          className={`
+          w-80 shrink-0 border-r border-border overflow-y-auto flex-col
+          lg:flex
+          ${showMissions ? "flex absolute inset-y-0 left-0 z-30 bg-background" : "hidden"}
+        `}
+        >
           <StoryIntro story={caseData.storyIntro} />
           <div className="flex-1 p-4 flex flex-col gap-2">
             {caseData.missions.map((m, i) => (
@@ -221,22 +270,33 @@ export function GameShell({ caseData }: { caseData: CaseData }) {
                     setCurrentMissionIdx(i);
                     setFeedback(null);
                     setResult(null);
+                    setShowMissions(false); // close on mobile after selection
                   }
                 }}
               />
             ))}
           </div>
+          {/* Close button for mobile */}
+          <button
+            onClick={() => setShowMissions(false)}
+            className="lg:hidden sticky bottom-0 w-full px-4 py-3 border-t border-border bg-card text-center text-sm text-muted-foreground hover:text-foreground"
+          >
+            Close
+          </button>
         </aside>
 
         {/* ── Center: Editor + controls ────── */}
-        <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="flex-1 flex flex-col overflow-hidden min-w-0">
           {currentMission && !isComplete && (
-            <div className="px-5 py-3 border-b border-border bg-card shrink-0">
-              <div className="flex items-center justify-between">
+            <div className="px-3 md:px-5 py-3 border-b border-border bg-card shrink-0">
+              <div className="flex items-center justify-between gap-2">
                 <span className="text-xs text-muted-foreground tracking-widest uppercase">
                   Objective {currentMissionIdx + 1}/{caseData.missions.length}
                 </span>
-                <span className="text-xs" style={{ color: "var(--primary)" }}>
+                <span
+                  className="text-xs whitespace-nowrap"
+                  style={{ color: "var(--primary)" }}
+                >
                   +{currentMission.points} pts
                 </span>
               </div>
@@ -253,13 +313,13 @@ export function GameShell({ caseData }: { caseData: CaseData }) {
           )}
 
           <div className="flex-1 flex flex-col overflow-hidden">
-            <div className="border-t border-border px-4 py-2 flex items-center justify-between bg-card shrink-0">
-              <div className="flex items-center gap-3">
+            <div className="border-t border-border px-2 md:px-4 py-2 flex flex-wrap items-center justify-between bg-card shrink-0 gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <button
                   onClick={handleRun}
                   disabled={isRunning || !code.trim()}
                   className="
-                    flex items-center gap-2 px-4 py-1.5 rounded text-sm font-mono
+                    flex items-center gap-2 px-3 md:px-4 py-1.5 rounded text-xs md:text-sm font-mono
                     transition-all duration-200 cursor-pointer
                     disabled:opacity-30 disabled:cursor-not-allowed
                   "
@@ -273,14 +333,17 @@ export function GameShell({ caseData }: { caseData: CaseData }) {
                   ) : (
                     <Play size={14} />
                   )}
-                  {isRunning ? "Running…" : "Run Query"}
+                  <span className="hidden sm:inline">
+                    {isRunning ? "Running…" : "Run Query"}
+                  </span>
+                  <span className="sm:hidden">Run</span>
                 </button>
 
                 {/* Previous Mission Button */}
                 <button
                   onClick={handlePreviousMission}
                   className="
-                    flex items-center gap-2 px-4 py-1.5 rounded text-sm font-mono
+                    flex items-center gap-1 md:gap-2 px-2 md:px-4 py-1.5 rounded text-xs md:text-sm font-mono
                     transition-all duration-200
                     disabled:opacity-30 disabled:cursor-not-allowed
                     cursor-pointer
@@ -292,14 +355,14 @@ export function GameShell({ caseData }: { caseData: CaseData }) {
                   disabled={currentMissionIdx === 0}
                 >
                   <ChevronLeft size={14} />
-                  Previous
+                  <span className="hidden md:inline">Previous</span>
                 </button>
 
                 {/* Show Schema Button */}
                 <button
                   onClick={() => setShowSchema(!showSchema)}
                   className="
-                    flex items-center gap-2 px-4 py-1.5 rounded text-sm font-mono
+                    flex items-center gap-1 md:gap-2 px-2 md:px-4 py-1.5 rounded text-xs md:text-sm font-mono
                     transition-all duration-200
                     cursor-pointer
                   "
@@ -313,14 +376,17 @@ export function GameShell({ caseData }: { caseData: CaseData }) {
                   }}
                 >
                   <Database size={14} />
-                  {showSchema ? "Hide Schema" : "Show Schema"}
+                  <span className="hidden md:inline">
+                    {showSchema ? "Hide Schema" : "Show Schema"}
+                  </span>
+                  <span className="md:hidden">Schema</span>
                 </button>
 
                 {/* Next Mission Button */}
                 <button
                   onClick={handleNextMission}
                   className="
-                    flex items-center gap-2 px-4 py-1.5 rounded text-sm font-mono
+                    flex items-center gap-1 md:gap-2 px-2 md:px-4 py-1.5 rounded text-xs md:text-sm font-mono
                     transition-all duration-200
                     disabled:opacity-30 disabled:cursor-not-allowed
                     cursor-pointer
@@ -334,19 +400,21 @@ export function GameShell({ caseData }: { caseData: CaseData }) {
                     currentMissionIdx === caseData.missions.length - 1
                   }
                 >
-                  Next
+                  <span className="hidden md:inline">Next</span>
                   <ChevronRight size={14} />
                 </button>
 
                 {currentMission && <HintToggle hint={currentMission.hint} />}
               </div>
-              <span className="text-xs text-muted-foreground">⌘ + Enter</span>
+              <span className="text-xs text-muted-foreground hidden sm:inline">
+                ⌘ + Enter
+              </span>
             </div>
 
             {/* Feedback banner */}
             {feedback && (
               <div
-                className={`px-4 py-3 text-sm border-t shrink-0 ${
+                className={`px-3 md:px-4 py-3 text-xs md:text-sm border-t shrink-0 ${
                   feedback.pass ? "border-green-800" : "border-yellow-800"
                 }`}
                 style={{
@@ -363,24 +431,36 @@ export function GameShell({ caseData }: { caseData: CaseData }) {
 
             {/* Error banner */}
             {error && (
-              <div className="px-4 py-2 border-t border-red-900 bg-red-950 shrink-0">
-                <p className="text-xs text-red-400 font-mono">{error}</p>
+              <div className="px-3 md:px-4 py-2 border-t border-red-900 bg-red-950 shrink-0">
+                <p className="text-xs text-red-400 font-mono break-words">
+                  {error}
+                </p>
               </div>
             )}
             <div className="flex-1 min-h-0">
               <MonacoEditor value={code} onChange={setCode} />
             </div>
-
-            {/* Run bar */}
           </div>
         </div>
 
-        {/* ── Right: Results table ───────── */}
-        <aside className="w-96 shrink-0 border-l border-border flex flex-col overflow-hidden">
-          <div className="px-4 py-2 border-b border-border bg-card shrink-0">
+        {/* ── Right: Results table (desktop always visible, mobile overlay) ───────── */}
+        <aside
+          className={`
+          w-full lg:w-96 shrink-0 border-l border-border flex flex-col overflow-hidden
+          lg:flex
+          ${showResults ? "flex absolute inset-y-0 right-0 z-30 bg-background" : "hidden"}
+        `}
+        >
+          <div className="px-4 py-2 border-b border-border bg-card shrink-0 flex items-center justify-between">
             <span className="text-xs text-muted-foreground tracking-widest uppercase">
               Query Results
             </span>
+            <button
+              onClick={() => setShowResults(false)}
+              className="lg:hidden text-muted-foreground hover:text-foreground"
+            >
+              <X size={16} />
+            </button>
           </div>
           <div className="flex-1 overflow-auto">
             <ResultsTable result={result} />
@@ -392,6 +472,17 @@ export function GameShell({ caseData }: { caseData: CaseData }) {
           <SchemaSidebar
             schema={caseData.schema}
             onClose={() => setShowSchema(false)}
+          />
+        )}
+
+        {/* ── Mobile overlay backdrop (when missions or results are open) ───── */}
+        {(showMissions || showResults) && (
+          <div
+            className="lg:hidden fixed inset-0 bg-black opacity-40 z-20"
+            onClick={() => {
+              setShowMissions(false);
+              setShowResults(false);
+            }}
           />
         )}
       </div>
@@ -445,12 +536,12 @@ function HintToggle({ hint }: { hint: string }) {
     <div className="relative">
       <button
         onClick={() => setShow((s) => !s)}
-        className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+        className="text-xs text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap"
       >
         {show ? "Hide hint" : "Show hint"}
       </button>
       {show && (
-        <div className="absolute bottom-full left-0 mb-2 w-72 bg-card border border-border rounded-lg p-3 shadow-lg z-10">
+        <div className="absolute bottom-full left-0 mb-2 w-64 sm:w-72 bg-card border border-border rounded-lg p-3 shadow-lg z-10">
           <p className="text-xs text-muted-foreground leading-relaxed">
             {hint}
           </p>
@@ -483,12 +574,12 @@ function SchemaSidebar({
     <>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black opacity-40  z-40"
+        className="fixed inset-0 bg-black opacity-40 z-40"
         onClick={onClose}
       />
 
       {/* Sidebar */}
-      <div className="fixed right-0 top-0 bottom-0 w-96 bg-background border-l border-border z-50 flex flex-col shadow-2xl">
+      <div className="fixed right-0 top-0 bottom-0 w-full sm:w-96 bg-background border-l border-border z-50 flex flex-col shadow-2xl">
         {/* Header */}
         <div className="px-4 py-3 border-b border-border flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2">
@@ -524,7 +615,7 @@ function SchemaSidebar({
                     {table.name}
                   </h3>
                 </div>
-                <div className="p-3">
+                <div className="p-3 overflow-x-auto">
                   <table className="w-full text-xs">
                     <thead>
                       <tr className="text-left text-muted-foreground">
