@@ -25,8 +25,8 @@ export function VictoryModal({
 
       {/* Modal card */}
       <div
-        className="relative z-10 max-w-lg w-full mx-4 rounded-xl border border-border overflow-hidden"
-        style={{ background: "var(--card)" }}
+        className="relative z-10 max-w-lg w-full mx-4 rounded-xl border border-border overflow-y-auto"
+        style={{ background: "var(--card)", height: "80vh" }}
       >
         {/* Gold top stripe */}
         <div className="h-1" style={{ background: "var(--primary)" }} />
