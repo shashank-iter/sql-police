@@ -1,13 +1,21 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { cases } from "@/data/cases";
+import { useAuth } from "@/contexts/AuthContext";
+import { UserProfile } from "@/components/UserProfile";
+import { LoginModal } from "@/components/LoginModal";
 import { Lock, Star, Clock, ChevronRight } from "lucide-react";
 
 /* ───────────────────────────────────────────
    LANDING PAGE  →  Case Board
    ─────────────────────────────────────────── */
 export default function HomePage() {
+  const { user } = useAuth();
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [selectedCase, setSelectedCase] = useState<string>("");
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* ── Top bar ────────────────────────── */}
@@ -18,9 +26,12 @@ export default function HomePage() {
         >
           ◆ SQL Detective
         </h1>
-        <span className="text-xs text-muted-foreground tracking-wide uppercase">
-          Case Board
-        </span>
+        <div className="flex items-center gap-4">
+          <span className="text-xs text-muted-foreground tracking-wide uppercase">
+            Case Board
+          </span>
+          <UserProfile />
+        </div>
       </header>
 
       {/* ── Hero blurb ─────────────────────── */}
@@ -44,13 +55,33 @@ export default function HomePage() {
       <main className="max-w-4xl mx-auto px-6 pb-24">
         <div className="flex flex-col gap-4">
           {cases.map((c, i) => {
-            const isLocked = false; // all cases unlocked
+            const requiresAuth = i > 0; // Case 1 (index 0) is free
+            const isLocked = requiresAuth && !user;
+
             return (
-              <CaseCard key={c.id} caseData={c} locked={isLocked} index={i} />
+              <CaseCard
+                key={c.id}
+                caseData={c}
+                locked={isLocked}
+                index={i}
+                requiresAuth={requiresAuth}
+                onAuthRequired={() => {
+                  setSelectedCase(c.title);
+                  setShowLoginModal(true);
+                }}
+              />
             );
           })}
         </div>
       </main>
+
+      {/* ── Login Modal ──────────────────────── */}
+      {showLoginModal && (
+        <LoginModal
+          caseName={selectedCase}
+          onClose={() => setShowLoginModal(false)}
+        />
+      )}
     </div>
   );
 }
@@ -60,19 +91,31 @@ function CaseCard({
   caseData,
   locked,
   index,
+  requiresAuth,
+  onAuthRequired,
 }: {
   caseData: (typeof cases)[0];
   locked: boolean;
   index: number;
+  requiresAuth: boolean;
+  onAuthRequired?: () => void;
 }) {
+  const handleClick = (e: React.MouseEvent) => {
+    if (locked && onAuthRequired) {
+      e.preventDefault();
+      onAuthRequired();
+    }
+  };
+
   const content = (
     <div
       className={`
         relative group border border-border rounded-lg overflow-hidden
         transition-all duration-300
-        ${locked ? "opacity-40 cursor-not-allowed" : "cursor-pointer hover:border-primary"}
+        ${locked ? "opacity-40 cursor-pointer" : "cursor-pointer hover:border-primary"}
         bg-card
       `}
+      onClick={handleClick}
     >
       {/* Accent stripe */}
       <div
@@ -92,6 +135,12 @@ function CaseCard({
               Case #{String(index + 1).padStart(3, "0")}
             </span>
             <DifficultyBadge level={caseData.difficulty} />
+            {requiresAuth && (
+              <span className="text-xs text-muted-foreground flex items-center gap-1">
+                <Lock size={12} />
+                Login Required
+              </span>
+            )}
           </div>
 
           {/* Title */}
