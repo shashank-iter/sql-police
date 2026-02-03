@@ -37,7 +37,7 @@ export default function HomePage() {
       {/* ── Hero blurb ─────────────────────── */}
       <section className="max-w-4xl mx-auto px-6 pt-14 pb-10 text-center">
         <p className="text-muted-foreground text-sm tracking-widest uppercase mb-3">
-          Welcome, Police
+          Welcome, Officer
         </p>
         <h2
           className="text-5xl font-sans tracking-widest uppercase leading-tight mb-4"
