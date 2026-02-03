@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { ReactNode } from "react";
 import { Bebas_Neue, Source_Code_Pro } from "next/font/google";
+import { AuthProvider } from "@/contexts/AuthContext";
 import "./globals.css";
 
 // ── Fonts ──────────────────────────────────
@@ -21,7 +22,7 @@ const sourceCode = Source_Code_Pro({
 });
 
 export const metadata: Metadata = {
-  title: "SQL Police",
+  title: "SQL Detective",
   description:
     "A gamified SQL learning platform. Solve police cases by writing queries.",
   icons: { icon: "/favicon.ico" },
@@ -34,7 +35,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       className={`dark ${bebas.variable} ${sourceCode.variable}`}
       suppressHydrationWarning
     >
-      <body className="min-h-screen font-mono antialiased">{children}</body>
+      <body className="min-h-screen font-mono antialiased">
+        <AuthProvider>{children}</AuthProvider>
+      </body>
     </html>
   );
 }
