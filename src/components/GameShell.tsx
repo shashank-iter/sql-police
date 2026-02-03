@@ -1,13 +1,19 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import Link from "next/link";
 import { useSqlDatabase } from "@/hooks/useSqlDatabase";
 import { MonacoEditor } from "@/components/MonacoEditor";
 import { ResultsTable } from "@/components/ResultsTable";
 import { MissionPanel } from "@/components/MissionPanel";
 import { VictoryModal } from "@/components/VictoryModal";
+import { UserProfile } from "@/components/UserProfile";
 import { getValidator } from "@/data/validators";
+import {
+  useUserProgress,
+  saveMissionAnswer,
+  loadMissionAnswer,
+} from "@/hooks/useUserProgress";
 import type { CaseData } from "@/data/cases";
 import type { QueryResult } from "@/hooks/useSqlDatabase";
 import {
@@ -35,6 +41,13 @@ export function GameShell({ caseData }: { caseData: CaseData }) {
     reset,
   } = useSqlDatabase(caseData.schema, caseData.seedData);
 
+  // ── Progress tracking ────────────────────
+  const {
+    progress,
+    loading: progressLoading,
+    saveProgress,
+  } = useUserProgress(caseData.id);
+
   // ── State ────────────────────────────────
   const [code, setCode] = useState("");
   const [result, setResult] = useState<QueryResult | null>(null);
@@ -57,12 +70,35 @@ export function GameShell({ caseData }: { caseData: CaseData }) {
   const currentMission = caseData.missions[currentMissionIdx];
   const isComplete = completedMissions.size === caseData.missions.length;
 
+  // ── Load progress from Supabase on mount ────
+  useEffect(() => {
+    if (progress) {
+      setCompletedMissions(new Set(progress.completed_missions));
+      setTotalPoints(progress.total_points);
+    }
+  }, [progress]);
+
+  // ── Load saved query from localStorage when mission changes ────
+  useEffect(() => {
+    if (currentMission) {
+      const savedQuery = loadMissionAnswer(caseData.id, currentMission.id);
+      if (savedQuery) {
+        setCode(savedQuery);
+      }
+    }
+  }, [currentMission, caseData.id]);
+
   // ── Execute ──────────────────────────────
   const handleRun = useCallback(() => {
     if (!code.trim() || isRunning) return;
     setIsRunning(true);
     setError(null);
     setFeedback(null);
+
+    // Save query to localStorage immediately when user runs it
+    if (currentMission) {
+      saveMissionAnswer(caseData.id, currentMission.id, code);
+    }
 
     setTimeout(() => {
       const outcome = run(code);
@@ -88,7 +124,11 @@ export function GameShell({ caseData }: { caseData: CaseData }) {
             const next = new Set(completedMissions);
             next.add(currentMission.id);
             setCompletedMissions(next);
-            setTotalPoints((p) => p + currentMission.points);
+            const newPoints = totalPoints + currentMission.points;
+            setTotalPoints(newPoints);
+
+            // Save progress to Supabase
+            saveProgress(Array.from(next), newPoints);
 
             if (next.size === caseData.missions.length) {
               setTimeout(() => setShowVictory(true), 800);
@@ -104,7 +144,10 @@ export function GameShell({ caseData }: { caseData: CaseData }) {
     run,
     currentMission,
     completedMissions,
+    totalPoints,
     caseData.missions.length,
+    caseData.id,
+    saveProgress,
   ]);
 
   // ── Reset DB ─────────────────────────────
@@ -206,6 +249,7 @@ export function GameShell({ caseData }: { caseData: CaseData }) {
           >
             <RotateCcw size={14} />
           </button>
+          <UserProfile />
         </div>
       </header>
 
