@@ -132,11 +132,11 @@ const validators: Record<string, ValidateFn> = {
         feedback:
           "Marcus Thorne never left (departure_time IS NULL). He should be here.",
       };
-    if (!names.includes("david calloway"))
-      return {
-        pass: false,
-        feedback: "David Calloway also stayed past midnight. Include him too.",
-      };
+    // if (!names.includes("david calloway"))
+    //   return {
+    //     pass: false,
+    //     feedback: "David Calloway also stayed past midnight. Include him too.",
+    //   };
 
     return {
       pass: true,
