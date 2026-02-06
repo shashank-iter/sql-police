@@ -22,7 +22,7 @@ const sourceCode = Source_Code_Pro({
 });
 
 export const metadata: Metadata = {
-  title: "SQL Detective",
+  title: "SQL Police",
   description:
     "A gamified SQL learning platform. Solve police cases by writing queries.",
   icons: { icon: "/favicon.ico" },

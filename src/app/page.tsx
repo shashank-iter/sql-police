@@ -69,6 +69,7 @@ export default function HomePage() {
                   setSelectedCase(c.title);
                   setShowLoginModal(true);
                 }}
+                user={user}
               />
             );
           })}
@@ -93,12 +94,14 @@ function CaseCard({
   index,
   requiresAuth,
   onAuthRequired,
+  user,
 }: {
   caseData: (typeof cases)[0];
   locked: boolean;
   index: number;
   requiresAuth: boolean;
   onAuthRequired?: () => void;
+  user: any;
 }) {
   const handleClick = (e: React.MouseEvent) => {
     if (locked && onAuthRequired) {
@@ -135,7 +138,7 @@ function CaseCard({
               Case #{String(index + 1).padStart(3, "0")}
             </span>
             <DifficultyBadge level={caseData.difficulty} />
-            {requiresAuth && (
+            {requiresAuth && !user && (
               <span className="text-xs text-muted-foreground flex items-center gap-1">
                 <Lock size={12} />
                 Login Required
