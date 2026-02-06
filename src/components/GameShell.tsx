@@ -66,6 +66,7 @@ export function GameShell({ caseData }: { caseData: CaseData }) {
   const [showSchema, setShowSchema] = useState(false);
   const [showMissions, setShowMissions] = useState(false); // mobile missions panel
   const [showResults, setShowResults] = useState(false); // mobile results panel
+  const [showHint, setShowHint] = useState(false);
 
   const currentMission = caseData.missions[currentMissionIdx];
   const isComplete = completedMissions.size === caseData.missions.length;
@@ -448,7 +449,22 @@ export function GameShell({ caseData }: { caseData: CaseData }) {
                   <ChevronRight size={14} />
                 </button>
 
-                {currentMission && <HintToggle hint={currentMission.hint} />}
+                <button
+                  className="text-xs text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap cursor-pointer"
+                  onClick={() => {
+                    setShowHint(!showHint);
+                  }}
+                >
+                  {showHint ? "Hide Hint" : "Show Hint"}
+                </button>
+
+                {/*{currentMission && (
+                  <HintToggle
+                    hint={currentMission.hint}
+                    show={showHint}
+                    setShow={setShowHint}
+                  />
+                )}*/}
               </div>
               <span className="text-xs text-muted-foreground hidden sm:inline">
                 ⌘ + Enter
@@ -481,6 +497,11 @@ export function GameShell({ caseData }: { caseData: CaseData }) {
                 </p>
               </div>
             )}
+            <HintToggle
+              hint={currentMission.hint}
+              show={showHint}
+              setShow={setShowHint}
+            />
             <div className="flex-1 min-h-0">
               <MonacoEditor value={code} onChange={setCode} />
             </div>
@@ -574,21 +595,31 @@ function StoryIntro({ story }: { story: string }) {
 }
 
 /* ── Hint toggle ────────────────────────────── */
-function HintToggle({ hint }: { hint: string }) {
-  const [show, setShow] = useState(false);
+function HintToggle({
+  hint,
+  show,
+  setShow,
+}: {
+  hint: string;
+  show: boolean;
+  setShow: React.Dispatch<React.SetStateAction<boolean>>;
+}) {
   return (
     <div className="relative">
       <button
         onClick={() => setShow((s) => !s)}
         className="text-xs text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap"
       >
-        {show ? "Hide hint" : "Show hint"}
+        {/*{show ? "Hide hint" : "Show hint"}*/}
       </button>
       {show && (
-        <div className="absolute bottom-full left-0 mb-2 w-64 sm:w-72 bg-card border border-border rounded-lg p-3 shadow-lg z-10">
-          <p className="text-xs text-muted-foreground leading-relaxed">
-            {hint}
-          </p>
+        // <div className="absolute bottom-full left-0 mb-2 w-64 sm:w-72 bg-card border border-border rounded-lg p-3 shadow-lg z-10">
+        //   <p className="text-xs text-muted-foreground leading-relaxed">
+        //     {hint}
+        //   </p>
+        // </div>
+        <div className="px-3 md:px-4 py-3 -mt-6.25 text-xs md:text-sm border-t shrink-0 border-yellow-800 bg-[rgba(217,159,79,0.08)]">
+          {hint}
         </div>
       )}
     </div>
